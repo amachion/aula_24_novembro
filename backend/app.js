@@ -5,7 +5,7 @@ const mongoose = require('mongoose');
 //const Cliente = require('./models/cliente');
 const clienteRouters = require('./rotas/clientes');
 
-mongoose.connect('mongodb+srv://hamilton:161810@cluster0.dweok.mongodb.net/Cliente?retryWrites=true&w=majority')
+mongoose.connect('mongodb+srv://user_base:outrasenha@cluster0.skf8n.mongodb.net/app-mean?retryWrites=true&w=majority')
     .then(() => {
         console.log("Conexão OK")
     }).catch(() => {

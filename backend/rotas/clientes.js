@@ -1,11 +1,32 @@
 const express = require("express");
 const router = express.Router();
 const Cliente = require('../models/cliente');
+const multer = require("multer");
+
+const MIME_TYPE_EXTENSAO_MAPA = {
+  'image/png': 'png',
+  'image/jpeg': 'jpg',
+  'image/jpg': 'jpg',
+  'image/bmp': 'bmp'
+}
+
+const { split } = require("ts-node");
+const armazenamento = multer.diskStorage ({
+  destination: (req, file, callback) => {
+    let e = MIME_TYPE_EXTENSAO_MAPA[file.mimetype] ? null : new Error ('Mime Type Invalido');
+    callback(null, "backend/imagens")
+  },
+  filename: (req, file, callback) => {
+    const nome = file.originalname.toLowerCase().split(" ").join("-");
+    const extensao = MIME_TYPE_EXTENSAO_MAPA[file.mimetype];
+    callback (null, `${nome}-${Date.now()}.${extensao}`);
+  }
+})
 
 // busca todos os clientes.
 router.get('', (req, res, next) => {
     Cliente.find().then(documents => {
-        console.log(documents)
+        //console.log(documents)
         res.status(200).json({
             mensagem: "Tudo OK",
             clientes: documents
@@ -14,11 +35,13 @@ router.get('', (req, res, next) => {
 });
 
 // adicionando um cliente.
-router.post('', (req, res, next) => {
+router.post('', multer({storage: armazenamento}).single('imagem'), (req, res, next) => {
+    const imagemURL = `${req.protocol}://${req.get('host')}`
     const cliente = new Cliente({
         nome: req.body.nome,
         fone: req.body.fone,
-        email: req.body.email
+        email: req.body.email,
+        imagemURL:`${imagemURL}/imagens/$req.filename}`
     })
     cliente.save().
     then(clienteInserido => {
@@ -32,7 +55,7 @@ router.post('', (req, res, next) => {
 // removendo um cliente
 router.delete('/:id', (req, res, next) => {
     Cliente.deleteOne({ _id: req.params.id }).then((resultado) => {
-        console.log(req.params);
+        //console.log(req.params);
         res.status(200).json({ mensagem: "Cliente removido" })
     });
 });
